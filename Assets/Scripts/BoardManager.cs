@@ -18,6 +18,9 @@ public class BoardManager : MonoBehaviour
     public List<GameObject> chessPiecesPrefabs;
     private List<GameObject> activeChessPieces;
 
+    private Material previousMat;
+    public Material selectedMat;
+
     public bool isWhiteTurn = true;
 
     private void Start()
@@ -68,8 +71,10 @@ public class BoardManager : MonoBehaviour
         if (!hasAtLeastOneMove)
             return;
 
-        allowedMoves = Chessmans[x, y].PossibleMove();
         selectedChessman = Chessmans[x, y];
+        previousMat = selectedChessman.GetComponent<MeshRenderer>().material;
+        selectedMat.mainTexture = previousMat.mainTexture;
+        selectedChessman.GetComponent<MeshRenderer>().material = selectedMat;
         BoardHighlights.Instance.HighlightAllowedMoves(allowedMoves);
     }
 
@@ -94,6 +99,7 @@ public class BoardManager : MonoBehaviour
             isWhiteTurn = !isWhiteTurn;
         }
 
+        selectedChessman.GetComponent<MeshRenderer>().material = previousMat;
         BoardHighlights.Instance.HideHighlights();
         selectedChessman = null;
     }

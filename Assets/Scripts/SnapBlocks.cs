@@ -11,6 +11,6 @@ public class SnapBlocks : MonoBehaviour
         snap.x = Mathf.RoundToInt(transform.position.x - .5f);
         snap.z = Mathf.RoundToInt(transform.position.z - .5f);
 
-        transform.position = new Vector3(snap.x + .5f, -0.51f, snap.z + 0.5f);
+        transform.position = new Vector3(snap.x + .5f, -0.5f, snap.z + 0.5f);
     }
 }
