@@ -57,6 +57,17 @@ public class BoardManager : MonoBehaviour
         if (Chessmans[x, y].isWhite != isWhiteTurn)
             return;
 
+        //make sure to not double click if has no moves
+        bool hasAtLeastOneMove = false;
+        allowedMoves = Chessmans[x, y].PossibleMove();
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++)
+                if (allowedMoves[i, j])
+                    hasAtLeastOneMove = true;
+
+        if (!hasAtLeastOneMove)
+            return;
+
         allowedMoves = Chessmans[x, y].PossibleMove();
         selectedChessman = Chessmans[x, y];
         BoardHighlights.Instance.HighlightAllowedMoves(allowedMoves);
@@ -174,5 +185,21 @@ public class BoardManager : MonoBehaviour
                 Vector3.forward * (selectionY + 1) + Vector3.right * selectionX,
                 Vector3.forward * selectionY + Vector3.right * (selectionX + 1));
         }
+    }
+
+    private void EndGame()
+    {
+        if (isWhiteTurn)
+            Debug.Log("White team wins");
+        else
+            Debug.Log("Black team wins");
+        foreach (GameObject go in activeChessPieces)
+            Destroy(go);
+
+        isWhiteTurn = true;
+        BoardHighlights.Instance.HideHighlights();
+        SpawnAllChessPieces();
+
+
     }
 }
