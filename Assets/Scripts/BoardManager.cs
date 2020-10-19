@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
+    public Chessman[,] Chessmans { set; get; }
+    private Chessman selectedChessman;
+
     private const float TILE_SIZE = 1.0f;
     private const float TILE_OFFSET = 0.5f;  //offset to the center (1/2)
 
@@ -12,6 +15,8 @@ public class BoardManager : MonoBehaviour
 
     public List<GameObject> chessPiecesPrefabs;
     private List<GameObject> activeChessPieces;
+
+    public bool isWhiteTurn = true;
 
     private void Start()
     {
@@ -22,6 +27,47 @@ public class BoardManager : MonoBehaviour
     {
         UpdateSelection();
         DrawChessBoard();
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (selectionX >= 0 && selectionY >= 0)
+            {
+                if (selectedChessman == null)
+                {
+                    // select the chessman
+                    SelectChessman(selectionX, selectionY);
+                }
+                else
+                {
+                    // move the chessman
+                    MoveChessman(selectionX, selectionY);
+                }
+            }
+        }
+    }
+
+    private void SelectChessman(int x, int y)
+    {
+        if (Chessmans[x, y] == null)
+            return;
+
+        if (Chessmans[x, y].isWhite != isWhiteTurn)
+            return;
+
+        selectedChessman = Chessmans[x, y];
+    }
+
+    private void MoveChessman(int x, int y)
+    {
+        if (selectedChessman.PossibleMove(x, y))
+        {
+            Chessmans[selectedChessman.CurrentX, selectedChessman.CurrentY] = null;
+            selectedChessman.transform.position = GetTileCenter(x, y);
+            Chessmans[x, y] = selectedChessman;
+            isWhiteTurn = !isWhiteTurn;
+        }
+
+        selectedChessman = null;
     }
 
     private void UpdateSelection()
@@ -42,30 +88,33 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    private void SpawnChessPieces(int index, Vector3 position)
+    private void SpawnChessPieces(int index, int x, int y)
     {
-        GameObject go = Instantiate(chessPiecesPrefabs[index], position, Quaternion.Euler(-90, 0, 0)) as GameObject;
+        GameObject go = Instantiate(chessPiecesPrefabs[index], GetTileCenter(x, y), Quaternion.Euler(-90, 0, 0)) as GameObject;
         go.transform.SetParent(transform);
+        Chessmans[x, y] = go.GetComponent<Chessman>();
+        Chessmans[x, y].SetPosition(x, y);
         activeChessPieces.Add(go);
     }
 
     private void SpawnAllChessPieces()
     {
         activeChessPieces = new List<GameObject>();
+        Chessmans = new Chessman[8, 8];
 
         //Spawn the chessman!
 
         // White Rooks
-        for (int i = 0; i < 8; i++) { SpawnChessPieces(0, GetTileCenter(i, 0)); }
+        for (int i = 0; i < 8; i++) { SpawnChessPieces(0, i, 0); }
 
         // White Pawns
-        for (int i = 0; i < 8; i++) { SpawnChessPieces(1, GetTileCenter(i, 1)); }
+        for (int i = 0; i < 8; i++) { SpawnChessPieces(1, i, 1); }
 
         // Black Rooks
-        for (int i = 0; i < 8; i++) { SpawnChessPieces(2, GetTileCenter(i, 7)); }
+        for (int i = 0; i < 8; i++) { SpawnChessPieces(2, i, 7); }
 
         // Black Pawns
-        for (int i = 0; i < 8; i++) { SpawnChessPieces(3, GetTileCenter(i, 6)); }
+        for (int i = 0; i < 8; i++) { SpawnChessPieces(3, i, 6); }
 
     }
 
