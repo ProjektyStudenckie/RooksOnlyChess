@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
+    public AudioSource moveSound, destroySound, promotionSound;
+
     public static BoardManager Instance { set; get; }
     private bool[,] allowedMoves { set; get; }
     public Chessman[,] Chessmans { set; get; }
@@ -21,11 +23,18 @@ public class BoardManager : MonoBehaviour
     private Material previousMat;
     public Material selectedMat;
 
+    public int[] EnPassantMove { set; get; }
+
     public bool isWhiteTurn = true;
 
     private void Start()
     {
         Instance = this;
+
+        moveSound = GetComponent<AudioSource>();
+        destroySound = GetComponent<AudioSource>();
+        promotionSound = GetComponent<AudioSource>();
+
         SpawnAllChessPieces();
     }
 
@@ -90,6 +99,54 @@ public class BoardManager : MonoBehaviour
                 //Capture a piece
                 activeChessPieces.Remove(c.gameObject);
                 Destroy(c.gameObject);
+                destroySound.Play();
+            }
+
+            // enpassant move
+            if (x == EnPassantMove[0] && y == EnPassantMove[1])
+            {
+                if (isWhiteTurn)
+                    c = Chessmans[x, y - 1];
+                else
+                    c = Chessmans[x, y + 1];
+
+                activeChessPieces.Remove(c.gameObject);
+                Destroy(c.gameObject);
+                destroySound.Play();
+            }
+            EnPassantMove[0] = -1;
+            EnPassantMove[1] = -1;
+            if (selectedChessman.GetType() == typeof(Pawn))
+            {
+                // promote for white rook
+                if (y == 7)
+                {
+                    activeChessPieces.Remove(selectedChessman.gameObject);
+                    Destroy(selectedChessman.gameObject);
+                    SpawnChessPieces(0, x, y);
+                    selectedChessman = Chessmans[x, y];
+                    promotionSound.Play();
+                }
+                // promote for black rook
+                else if (y == 0)
+                {
+                    activeChessPieces.Remove(selectedChessman.gameObject);
+                    Destroy(selectedChessman.gameObject);
+                    SpawnChessPieces(2, x, y);
+                    selectedChessman = Chessmans[x, y];
+                    promotionSound.Play();
+                }
+
+                if (selectedChessman.CurrentY == 1 && y == 3)
+                {
+                    EnPassantMove[0] = x;
+                    EnPassantMove[1] = y - 1;
+                }
+                else if (selectedChessman.CurrentY == 6 && y == 4)
+                {
+                    EnPassantMove[0] = x;
+                    EnPassantMove[1] = y + 1;
+                }
             }
 
             Chessmans[selectedChessman.CurrentX, selectedChessman.CurrentY] = null;
@@ -97,6 +154,7 @@ public class BoardManager : MonoBehaviour
             selectedChessman.SetPosition(x, y);
             Chessmans[x, y] = selectedChessman;
             isWhiteTurn = !isWhiteTurn;
+            moveSound.Play();
         }
 
         selectedChessman.GetComponent<MeshRenderer>().material = previousMat;
@@ -135,6 +193,7 @@ public class BoardManager : MonoBehaviour
     {
         activeChessPieces = new List<GameObject>();
         Chessmans = new Chessman[8, 8];
+        EnPassantMove = new int[2] { -1, -1};
 
         //Spawn the chessman!
 
