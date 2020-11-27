@@ -1,12 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BoardManager : MonoBehaviour
 {
     public bool rooksOnlyGame = true;
 
     public AudioSource moveSound, destroySound, promotionSound;
+
+    public GameObject winPanel;
+    public Text winText;
 
     public static BoardManager Instance { set; get; }
     private bool[,] allowedMoves { set; get; }
@@ -32,6 +36,8 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         Instance = this;
+
+        winPanel.SetActive(false);
 
         moveSound = GetComponent<AudioSource>();
         destroySound = GetComponent<AudioSource>();
@@ -286,10 +292,12 @@ public class BoardManager : MonoBehaviour
 
     private void EndGame(bool whiteWins)
     {
+        winPanel.SetActive(true);
+
         if (whiteWins)
-            Debug.Log("White team wins");
+            winText.text = "WHITE WINS!";
         else
-            Debug.Log("Black team wins");
+            winText.text = "BLACK WINS!";
 
         foreach (GameObject go in activeChessPieces)
             Destroy(go);
