@@ -263,6 +263,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9416224e62b95ad4d96784801120ee37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rooksOnlyGame: 1
   moveSound: {fileID: 0}
   destroySound: {fileID: 0}
   promotionSound: {fileID: 0}

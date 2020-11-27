@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
+    public bool rooksOnlyGame = true;
+
     public AudioSource moveSound, destroySound, promotionSound;
 
     public static BoardManager Instance { set; get; }
@@ -56,6 +58,7 @@ public class BoardManager : MonoBehaviour
                 {
                     // move the chessman
                     MoveChessman(selectionX, selectionY);
+                    CheckIfEnd();
                 }
             }
         }
@@ -182,7 +185,7 @@ public class BoardManager : MonoBehaviour
 
     private void SpawnChessPieces(int index, int x, int y)
     {
-        GameObject go = Instantiate(chessPiecesPrefabs[index], GetTileCenter(x, y), Quaternion.Euler(-90, 0, 0)) as GameObject;
+        GameObject go = Instantiate(chessPiecesPrefabs[index], GetTileCenter(x, y), Quaternion.Euler(-90, 0, 0));
         go.transform.SetParent(transform);
         Chessmans[x, y] = go.GetComponent<Chessman>();
         Chessmans[x, y].SetPosition(x, y);
@@ -196,6 +199,16 @@ public class BoardManager : MonoBehaviour
         EnPassantMove = new int[2] { -1, -1};
 
         //Spawn the chessman!
+
+        if(rooksOnlyGame)
+        {
+            for (int i = 0; i < 8; i++) { SpawnChessPieces(0, i, 0); }
+            for (int i = 0; i < 8; i++) { SpawnChessPieces(0, i, 1); }
+
+            for (int i = 0; i < 8; i++) { SpawnChessPieces(2, i, 7); }
+            for (int i = 0; i < 8; i++) { SpawnChessPieces(2, i, 6); }
+            return;
+        }
 
         // White Rooks
         for (int i = 0; i < 8; i++) { SpawnChessPieces(0, i, 0); }
@@ -240,8 +253,6 @@ public class BoardManager : MonoBehaviour
         // Draw selection
         if (selectionX >= 0 && selectionY >= 0)
         {
-
-
             Debug.DrawLine(
                 Vector3.forward * selectionY + Vector3.right * selectionX,
                 Vector3.forward * (selectionY + 1) + Vector3.right * (selectionX + 1));
@@ -252,19 +263,39 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    private void EndGame()
+    private void CheckIfEnd()
     {
-        if (isWhiteTurn)
+        if(activeChessPieces.Count > 0)
+        {
+            if (activeChessPieces[0].name.ToUpper().StartsWith("WHITE"))
+            {
+                for (int i = 0; i < activeChessPieces.Count; i++)
+                    if (activeChessPieces[i].name.ToUpper().StartsWith("BLACK"))
+                        return;
+                EndGame(true);
+            }
+            else
+            {
+                for (int i = 0; i < activeChessPieces.Count; i++)
+                    if (activeChessPieces[i].name.ToUpper().StartsWith("WHITE"))
+                        return;
+                EndGame(false);
+            }
+        }
+    }
+
+    private void EndGame(bool whiteWins)
+    {
+        if (whiteWins)
             Debug.Log("White team wins");
         else
             Debug.Log("Black team wins");
+
         foreach (GameObject go in activeChessPieces)
             Destroy(go);
 
         isWhiteTurn = true;
         BoardHighlights.Instance.HideHighlights();
         SpawnAllChessPieces();
-
-
     }
 }
