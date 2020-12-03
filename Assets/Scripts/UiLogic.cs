@@ -5,17 +5,29 @@ using UnityEngine.UI;
 
 public class UiLogic : MonoBehaviour
 {
-	public Button yourButton;
+	public Button resetButton;
+	public Button quitButton;
 	public GameObject winPanel;
 
 	void Start()
 	{
-		Button btn = yourButton.GetComponent<Button>();
-		btn.onClick.AddListener(OnResetClick);
+		Button btnReset = resetButton.GetComponent<Button>();
+		Button btnQuit = quitButton.GetComponent<Button>();
+		btnReset.onClick.AddListener(OnResetClick);
+		btnQuit.onClick.AddListener(OnQuitClick);
 	}
 
-	void OnResetClick()
+
+    private void Update()
+    {
+		if (Input.GetKey("escape"))
+			Application.Quit();
+	}
+
+    void OnResetClick() => winPanel.SetActive(false);
+
+	void OnQuitClick()
 	{
-		winPanel.SetActive(false);
+		Application.Quit();
 	}
 }
